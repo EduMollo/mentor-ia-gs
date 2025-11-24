@@ -112,7 +112,7 @@
                     <execution>
                         <goals>
                             <goal>build</goal>
-                            <goal>dev</goal>
+                            <goal>build</goal>
                         </goals>
                     </execution>
                 </executions>
