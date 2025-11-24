@@ -17,7 +17,6 @@ import java.util.List;
 @Path("/api/questionario")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@PermitAll
 public class QuestionarioResource {
 
     @Inject
@@ -28,6 +27,7 @@ public class QuestionarioResource {
 
     @GET
     @Path("/perguntas")
+    @PermitAll
     public Response getPerguntas() {
         List<PerguntaResponseDto> perguntas = service.buscarPerguntas();
         return Response.ok(perguntas).build();
@@ -35,6 +35,7 @@ public class QuestionarioResource {
 
     @POST
     @Path("/responder")
+    @Authenticated
     public Response responderQuestionario(@Valid SubmissaoTesteRequestDto body) {
         String emailUsuario = jwt.getName();
         int idTesteGerado = service.processarSubmissao(emailUsuario, body);
@@ -46,6 +47,7 @@ public class QuestionarioResource {
 
     @GET
     @Path("/resultado/{idTeste}")
+    @Authenticated
     public Response obterResultado(@PathParam("idTeste") int idTeste) {
         String emailUsuario = jwt.getName();
         ResultadoResponseDto resultado = service.buscarResultado(idTeste, emailUsuario);
