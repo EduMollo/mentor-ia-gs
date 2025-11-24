@@ -1,27 +1,34 @@
-# ===== Build =====
-FROM maven:3.9.6-eclipse-temurin-21 AS build
-WORKDIR /workspace
+# ===============================
+# Estágio 1: Build (Compilação)
+# ===============================
+FROM maven:3.9-eclipse-temurin-17 AS build
+WORKDIR /app
 
+# 1. Copia apenas o pom.xml primeiro.
+# Isso permite que o Docker use cache nas dependências se o pom não mudar.
 COPY pom.xml .
+
+# 2. Baixa as dependências (modo offline)
+RUN mvn dependency:go-offline -B
+
+# 3. Copia o código fonte
 COPY src ./src
 
-RUN mvn -e -B -DskipTests clean package
+# 4. Compila o projeto e gera o .jar (pulando testes para agilizar o build do container)
+RUN mvn clean package -DskipTests
 
-# ===== Run =====
-FROM registry.access.redhat.com/ubi9/openjdk-21:1.23
+# ===============================
+# Estágio 2: Run (Execução)
+# ===============================
+FROM eclipse-temurin:17-jre
+WORKDIR /app
 
-WORKDIR /deployments
+# 5. Copia apenas o .jar gerado no estágio anterior
+# O curinga (*.jar) pega o nome do arquivo independente da versão
+COPY --from=build /app/target/*.jar app.jar
 
-COPY --from=build /workspace/target/quarkus-app/lib/ /deployments/lib/
-COPY --from=build /workspace/target/quarkus-app/*.jar /deployments/
-COPY --from=build /workspace/target/quarkus-app/app/ /deployments/app/
-COPY --from=build /workspace/target/quarkus-app/quarkus/ /deployments/quarkus/
-
+# 6. Expõe a porta (padrao do Spring Boot é 8080, ajuste se necessário)
 EXPOSE 8080
 
-USER 185
-
-ENV JAVA_APP_JAR="/deployments/quarkus-run.jar"
-ENV JAVA_OPTS="-Dquarkus.http.host=0.0.0.0"
-
-ENTRYPOINT [ "java", "-jar", "/deployments/quarkus-run.jar" ]
+# 7. Comando para iniciar a aplicação
+ENTRYPOINT ["java", "-jar", "app.jar"]
