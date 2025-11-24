@@ -4,7 +4,6 @@ import br.com.mentoria.dto.PerguntaResponseDto;
 import br.com.mentoria.dto.ResultadoResponseDto;
 import br.com.mentoria.dto.SubmissaoTesteRequestDto;
 import br.com.mentoria.service.QuestionarioService;
-import io.quarkus.security.Authenticated;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 
 import jakarta.inject.Inject;
@@ -12,12 +11,13 @@ import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.annotation.security.PermitAll;
 import java.util.List;
 
 @Path("/api/questionario")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@Authenticated
+@PermitAll
 public class QuestionarioResource {
 
     @Inject
